@@ -32,8 +32,16 @@
       </div>
     </main>
     <footer>
-      <span>{{ copyright }}</span>
-      <span>{{ newSize }}</span>
+      <span v-for="item,index in Bus.footerDefault" :key="index" :title="item.title">
+        {{
+          footerItem(item)
+        }}
+      </span>
+      <span v-for="item,index in Bus.footer" :key="index" :title="item.title">
+        {{
+          footerItem(item)
+        }}
+      </span>
     </footer>
   </div>
 </template>
@@ -46,7 +54,7 @@ export default {
     return {
       title: 'Caliper',
       copyright: '© 2020 Caliper',
-      newSize: '0x0',
+      newSize: '0*0',
       imageUrl: '',
       operationMap: [{
         label: '开始',
@@ -69,6 +77,12 @@ export default {
     }
   },
   methods: {
+    footerItem(item){
+      if (item.icon) return `<i class="${item.icon}"></i>`
+      if (item.content) return item.content
+      if (item.text) return item.text
+      if (item.title) return item.title
+    },
     handleClick(tab, event) {
       console.log(tab, event);
     },
@@ -206,7 +220,7 @@ export default {
         caliper.style.bottom = Math.abs(screenHeight - this.end.y)+'px';
         caliper.style.right = Math.abs(screenWidth - this.end.x)+'px';
         caliper.setAttribute('data-size', `${this.end.x - this.start.x}x${this.end.y - this.start.y}`);
-        this.newSize = `${this.end.x - this.start.x}x${this.end.y - this.start.y}`;
+        this.newSize = `${this.end.x - this.start.x}✖${this.end.y - this.start.y}`;
         caliper.classList.add('active');
     }
   },
@@ -331,19 +345,28 @@ footer {
   background: rgb(0, 122, 204);
 }
 footer span {
+  display: inline-block;
+  padding: 0 8px;
   height: 32px;
   line-height: 32px;
   margin-right: 16px;
 }
+footer span:hover{
+  background: rgb(0, 122, 164);
+}
 
-.el-tabs__content {
-  width: calc(100% - 30px);
-  height: calc(100vh - 102px);
+.el-tabs.el-tabs--top.el-tabs--border-card{
+  height: 100%;
+}
+.el-tabs--border-card>.el-tabs__content.el-tabs__content{
+  padding: 0;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
 }
 
 .el-tab-pane {
-  height: calc(100vh - 102px);
+  height: 100%;
   overflow-y: auto;
 }
 </style>

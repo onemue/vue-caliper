@@ -1,15 +1,18 @@
 <template>
-  <div class="vc-operate">
+  <div class="vc-operate"
+    ref="operate" 
+    @mousedown.stop="moveContainerStart"
+    @mousemove.stop="moveContainer"
+    @mouseup.stop="moveContainerEnd"
+  >
     <div class="container" ref="container" 
-      @mousedown.stop="moveContainerStart"
-      @mousemove.stop="moveContainer"
-      @mouseup.stop="moveContainerEnd"
-
       :style="{
-        transform: `scale(${scale}) translateX(${translate.x/20}px) translateY(${translate.y/20}px)`
+        transform: `scale(${scale}) translateX(${translate.x}px) translateY(${translate.y}px)`
       }"
     >
       <img class="img" :src="data.url" alt="" srcset="" 
+        oncontextmenu="return false;"
+        ondragstart="return false;"
         @mouseup.stop  
         @mousedown.stop
         @mousemove.stop
@@ -30,18 +33,33 @@ export default {
       translate: {
         x:0,
         y:0
+      },
+      endMove: {
+        x:0,
+        y:0
       }
     }
   },
   mounted() {
+    this.Bus.$emit([{
+        id: 'boxSize',
+        title: '最后选框大小',
+        content: '0*0',
+    },
+    {
+        id: 'scale',
+        title: '图片比例',
+        content: '100%',
+    },
+    ])
     this.scale = this.data.scale
     console.log(this)
     //    给页面绑定鼠标滚轮事件,针对火狐的非标准事件 
-    this.$refs.container.addEventListener("DOMMouseScroll", e=>this.scrollFunc(e), false)
+    this.$refs.operate.addEventListener("DOMMouseScroll", e=>this.scrollFunc(e), false)
     //    给页面绑定鼠标滚轮事件，针对Google，mousewheel非标准事件已被弃用，请使用 wheel事件代替
-    this.$refs.container.addEventListener("wheel", e=>this.scrollFunc(e), false)
+    this.$refs.operate.addEventListener("wheel", e=>this.scrollFunc(e), false)
     //    ie不支持wheel事件，若一定要兼容，可使用mousewheel
-    this.$refs.container.addEventListener("mousewheel", e=>this.scrollFunc(e), false)
+    this.$refs.operate.addEventListener("mousewheel", e=>this.scrollFunc(e), false)
   },
   methods:{
     scrollFunc(e) {
@@ -84,15 +102,21 @@ export default {
       if(!this.isMove){
         return
       }
+      console.log( this.translate.x + (e.pageX - this.startMove.x),  this.translate.y + (e.pageY - this.startMove.y))
       this.translate = {
-        x: this.translate.x + (e.pageX - this.startMove.x),
-        y: this.translate.y + (e.pageY - this.startMove.y)
+        x: (this.endMove.x + e.pageX - this.startMove.x),
+        y: (this.endMove.y + e.pageY - this.startMove.y)
       }
     },
     moveContainerEnd(){
-      this.isMove = false
+      this.isMove = false;
+      this.endMove = JSON.parse(JSON.stringify(this.translate))
     }
-  }
+  },
+  beforeDestroy() {
+  //组件销毁前需要解绑事件。否则会出现重复触发事件的问题
+  this.bus.$off(this.$route.path);
+  },
 }
 </script>
 
@@ -100,6 +124,7 @@ export default {
 .vc-operate {
   width: 100%;
   height: 100%;
+  padding: -10px;
   background: #000;
   overflow: hidden;
 }
